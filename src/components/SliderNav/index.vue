@@ -4,9 +4,15 @@
       <a-icon :type="$store.state.menu.collapsed ? 'menu-unfold' : 'menu-fold'" />
     </a-button>
     <div class="breadcrumb">
-      <a-breadcrumb>
-        <a-breadcrumb-item>首页</a-breadcrumb-item>
-        <a-breadcrumb-item><a href="">统计</a></a-breadcrumb-item>
+      <a-breadcrumb v-if="currentRoute.length > 1">
+        <a-breadcrumb-item
+          >{{ currentRoute[0] ? currentRoute[0].meta.title : "" }}
+        </a-breadcrumb-item>
+        <a-breadcrumb-item
+          ><router-link :to="{ name: currentRoute[1].name }">{{
+            currentRoute[1].meta.title
+          }}</router-link>
+        </a-breadcrumb-item>
       </a-breadcrumb>
     </div>
     <ul class="user-info">
@@ -24,12 +30,29 @@ export default {
   name: 'SliderNav',
   data() {
     return {
-      // collapsed: false,
+      currentRoute: this.$router.currentRoute.matched,
     };
+  },
+  watch: {
+    // 不应该侦听 $router
+    // $router: {
+    //   handler(nVal, oVal) {
+    //     console.log(nVal);
+    //   },
+    //   deep: true,
+    //   // immediate: true,
+    // },
+    $route: {
+      handler(nVal) {
+        // $router.currentRoute 相当于 $route
+        // this.currentRoute = this.$router.currentRoute.matched;
+        this.currentRoute = nVal.matched;
+      },
+      deep: true,
+    },
   },
   methods: {
     toggleCollapsed() {
-      // this.collapsed = !this.collapsed;
       this.$store.dispatch('menu/updateCollapsed');
     },
     logtout() {
