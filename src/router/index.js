@@ -40,12 +40,12 @@ const asyncRouterMap = [
         component: () => import(/* webpackChunkName: "product" */ '@/views/productList/productAdd.vue'),
       },
       {
-        path: 'edit',
+        path: 'edit/:id',
         name: 'ProductEdit',
         meta: {
           title: '编辑商品',
           icon: 'file-add',
-          hidden: false,
+          hidden: true,
         },
         component: () => import(/* webpackChunkName: "product" */ '@/views/productList/productEdit.vue'),
       },
@@ -102,7 +102,6 @@ const routes = [
       title: '登录',
       hidden: true,
     },
-    // component: () => import(/* webpackChunkName: "loginRegi" */ '../views/login/index.vue'),
     component: Login,
   },
   {
@@ -112,7 +111,6 @@ const routes = [
       title: '注册',
       hidden: true,
     },
-    // component: () => import(/* webpackChunkName: "loginRegi" */ '../views/register/index.vue'),
     component: Register,
   },
 ];
@@ -128,7 +126,6 @@ router.beforeEach((to, from, next) => {
     if (store.getters.user.appkey && store.getters.user.username && store.getters.user.role) {
       if (!isAddRoutes) {
         const menuRoutes = getMenuRoutes(store.getters.user.role, asyncRouterMap);
-        // 没看懂
         store.dispatch('menu/changeMenuRoutes', routes.concat(menuRoutes)).then(() => {
           router.addRoutes(menuRoutes);
           // router.addRoute(menuRoutes);

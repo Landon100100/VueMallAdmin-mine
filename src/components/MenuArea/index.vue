@@ -14,7 +14,7 @@
             <span>{{ route.meta.title }}</span>
           </span>
           <template v-for="child in route.children">
-            <a-menu-item :key="child.name">
+            <a-menu-item v-if="!child.meta.hidden" :key="child.name">
               <router-link :to="{ name: child.name }">
                 <a-icon :type="child.meta.icon" />
                 <span>{{ child.meta.title }}</span>
