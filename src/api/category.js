@@ -52,15 +52,6 @@ export function editCategory(data) {
 }
 
 /**
- * 查询商品详情
- * @param {*} id
- * @returns
- */
-export function getProductDetail(id) {
-  return request.get(`/products/${id}`);
-}
-
-/**
  * 商品类目删除
  * @param {*} id
  * @returns

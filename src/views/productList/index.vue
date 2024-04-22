@@ -128,8 +128,6 @@ const columns = [
   },
   {
     title: '操作',
-    // dataIndex: "operation",
-    // key: "operation",
     dataIndex: 'action',
     key: 'action',
     fixed: 'right',
@@ -190,7 +188,7 @@ export default {
       // this.data = resp.data;
       this.data = resp.data.map((item) => ({
         ...item,
-        categoryName: this.categoryObj[item.category].name,
+        categoryName: this.categoryObj[item.category]?.name,
       }));
       this.pagination.total = resp.total;
     },
