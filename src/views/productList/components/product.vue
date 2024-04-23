@@ -10,22 +10,22 @@
       <!-- @submit="confirmHandle" -->
       <a-form-model
         ref="ruleFormRef"
-        :model="editForm"
+        :model="editAddForm"
         :rules="rules"
         v-bind="formItemLayout"
-        class="search-inline-box"
+        class="product-form-box"
         @submit="editSubmit"
         @submit.native.prevent
       >
         <a-form-model-item v-if="step === 0" label="标题" prop="title">
-          <a-input v-model="editForm.title" placeholder="请输入标题"> </a-input>
+          <a-input v-model="editAddForm.title" placeholder="请输入标题"> </a-input>
         </a-form-model-item>
         <a-form-model-item v-if="step === 0" label="商品描述" prop="desc">
-          <a-input v-model="editForm.desc" placeholder="请输入商品描述"> </a-input>
+          <a-input v-model="editAddForm.desc" placeholder="请输入商品描述"> </a-input>
         </a-form-model-item>
         <a-form-model-item v-if="step === 0" label="商品类目" prop="category">
           <a-select
-            v-model="editForm.category"
+            v-model="editAddForm.category"
             placeholder="请选择商品类目"
             :default-active-first-option="false"
             show-arrow
@@ -40,7 +40,7 @@
           </a-select>
           <!-- @search="handleCItemSearch" -->
           <a-select
-            v-model="editForm.c_item"
+            v-model="editAddForm.c_item"
             allowClear
             placeholder="请选择商品子类目"
             :default-active-first-option="false"
@@ -54,10 +54,9 @@
           </a-select>
         </a-form-model-item>
         <a-form-model-item v-if="step === 0" label="商品标签" prop="tags">
-          <!-- show-search -->
           <a-select
             mode="tags"
-            v-model="editForm.tags"
+            v-model="editAddForm.tags"
             placeholder="请选择商品标签"
             :default-value="['包邮，最晚次日达']"
             :default-active-first-option="true"
@@ -80,7 +79,7 @@
         </a-form-model-item>
         <a-form-model-item v-if="step === 1" label="商品售价" prop="price">
           <a-input-number
-            v-model.number="editForm.price"
+            v-model.number="editAddForm.price"
             placeholder="请输入商品售价"
             class="input-number-box input-number-handler-disable"
             :min="0.01"
@@ -89,7 +88,7 @@
         </a-form-model-item>
         <a-form-model-item v-if="step === 1" label="折扣价格" prop="price_off">
           <a-input-number
-            v-model.number="editForm.price_off"
+            v-model.number="editAddForm.price_off"
             placeholder="请输入折扣价格"
             class="input-number-box input-number-handler-disable"
             :min="0.01"
@@ -98,7 +97,7 @@
         </a-form-model-item>
         <a-form-model-item v-if="step === 1" label="商品库存" prop="inventory">
           <a-input-number
-            v-model.number="editForm.inventory"
+            v-model.number="editAddForm.inventory"
             placeholder="请输入商品库存"
             class="input-number-box"
             :min="0"
@@ -106,12 +105,12 @@
           />
         </a-form-model-item>
         <a-form-model-item v-if="step === 1" label="计量单位" prop="unit">
-          <a-input v-model="editForm.unit" placeholder="请输入计量单位"> </a-input>
+          <a-input v-model="editAddForm.unit" placeholder="请输入计量单位"> </a-input>
         </a-form-model-item>
         <!-- 需将数据改为 ant-design 对应的结构 -->
         <a-form-model-item v-if="step === 1" label="商品相册" prop="images">
           <!-- https://mallapi.duyiedu.com/upload/images?appkey= -->
-          <!-- name 发到后台的文件参数名 -->
+          <!-- name 发到后端的文件参数名 -->
           <a-upload
             :action="
               'https://mallapi.duyiedu.com/upload/images?appkey=' + $store.getters.user.appkey
@@ -132,9 +131,14 @@
             <img alt="example" style="width: 100%" :src="previewImage" />
           </a-modal>
         </a-form-model-item>
+        <a-form-model-item v-if="step === 1" label="是否上架" prop="status">
+          <a-checkbox default-checked v-model="statusComputed" />
+          <!-- <a-checkbox default-checked v-model="editAddForm.status"
+            @change="onCheckboxChange" /> -->
+        </a-form-model-item>
         <a-form-model-item
-          :label-col="formTailLayout.labelCol"
-          :wrapper-col="formTailLayout.wrapperCol"
+          :colon="false"
+          label=" "
         >
           <!-- html-type="submit" -->
           <a-button type="info" v-if="step > 0" @click="prev"> 上一步 </a-button>
@@ -156,12 +160,8 @@ import { getProductDetail, editProduct, addProduct } from '@/api/product';
 import { getCategoryList } from '@/api/category';
 
 const formItemLayout = {
-  labelCol: { span: 7 },
-  wrapperCol: { span: 16, offset: 1 },
-};
-const formTailLayout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 16, offset: 8 },
+  labelCol: { span: 4 },
+  wrapperCol: { span: 19, offset: 1 },
 };
 function getBase64(file) {
   return new Promise((resolve, reject) => {
@@ -191,13 +191,12 @@ export default {
     return {
       step: 0,
       formItemLayout,
-      formTailLayout,
-      editForm: {
+      editAddForm: {
         tags: [],
         images: [],
         unit: '',
         inventory: '',
-        status: 1,
+        status: 1, // 是 1 还是说是 true
         sale: '',
         id: '',
         title: '',
@@ -258,6 +257,12 @@ export default {
           },
         ],
         unit: [{ required: true, message: '请输入计量单位', trigger: 'blur' }],
+        status: [{
+          // type: 'boolean',
+          type: 'number', // 不支持数组格式，如 ['number', 'boolen']
+          message: '请选择上下架状态',
+          trigger: 'blur',
+        }],
         images: [
           {
             type: 'array',
@@ -279,17 +284,30 @@ export default {
       previewImage: '',
     };
   },
+  computed: {
+    // 方法1：利用计算属性确定是否上下架
+    statusComputed: {
+      get() {
+        return this.editAddForm.status * 1 === 1;
+      },
+      set(value) {
+        this.editAddForm.status = value ? 1 : 0;
+      },
+    },
+  },
   created() {
     this.handleSearch();
   },
   mounted() {
     if (this.mode === 'edit') {
       this.fetchData().then(() => {
-        this.fileList = this.editForm.images.map((item, index) => {
-          const matched = item.match(/:\/\/(.*)/);
+        this.fileList = this.editAddForm.images.map((item, index) => {
           let name;
-          if (matched) {
-            name = `/${matched[1]}`;
+          if (item) {
+            const matched = item?.match(/:\/\/(.*)/);
+            if (matched) {
+              name = `/${matched[1]}`;
+            }
           }
           return {
             uid: index,
@@ -306,9 +324,9 @@ export default {
     async fetchData() {
       const resp = await getProductDetail(this.$route.params.id);
       // 需要拼接数据
-      this.editForm = resp;
+      this.editAddForm = resp;
       this.tagList = resp.tags;
-      this.cate = this.editForm.category;
+      this.cate = this.editAddForm.category;
       for (let i = 0; i < this.categoryList.length; i += 1) {
         if (this.categoryList[i].id === this.cate) {
           this.cItemList = this.categoryList[i].c_items;
@@ -317,7 +335,7 @@ export default {
     },
     handleChange(pagination) {
       this.cate = pagination;
-      this.editForm.c_item = undefined;
+      this.editAddForm.c_item = undefined;
       for (let i = 0; i < this.categoryList.length; i += 1) {
         if (this.categoryList[i].id === pagination) {
           this.cItemList = this.categoryList[i].c_items;
@@ -341,15 +359,11 @@ export default {
     // eslint-disable-next-line no-unused-vars
     handleTagsSearch(value) {},
     // eslint-disable-next-line no-unused-vars
-    search(record) {
-      this.pagination.current = 1;
-      // this.fetchData(
-      //   this.pagination.current,
-      //   this.pagination.pageSize,
-      //   this.formInline.searchWord,
-      //   this.formInline.category
-      // );
-      this.fetchData();
+    onCheckboxChange(e) {
+      // e.target.checked 为 true 表示选中，false 表示未选中
+      // console.log(e.target);
+      // this.editAddForm.status = e.target.checked ? 1 : 0;
+      // console.log(`选中状态: ${this.editAddForm.status}`);
     },
     next() {
       // eslint-disable-next-line
@@ -367,7 +381,7 @@ export default {
     prev() {
       if (this.step > 0) {
         this.step -= 1;
-        this.$refs.ruleFormRef.resetFields();
+        this.$refs.ruleFormRef.clearValidate();
       }
     },
     handleImageClose() {
@@ -384,13 +398,11 @@ export default {
     },
     handleImageChange({ file, fileList }) {
       if (file.status === 'done') {
-        this.editForm.images.push(file.response.data.url);
+        this.editAddForm.images.push(file.response.data.url);
       } else if (file.status === 'removed') {
-        // const { url } = file.response.data;
-        // const { url } = file;
-        // 当你删除一个图片时，如果是本次上传后删除的，this.editForm.images过滤掉file.response.data.url。如果是之前上传的，过滤掉 file.url
+        // 当删除一个图片时，若是本次上传后删除的，this.editAddForm.images过滤掉file.response.data.url。若是之前上传的，过滤掉 file.url
         const url = file.response ? file.response.data.url : file.url;
-        this.editForm.images = this.editForm.images.filter((item) => item !== url);
+        this.editAddForm.images = this.editAddForm.images.filter((item) => item !== url);
       }
       this.fileList = fileList;
     },
@@ -399,10 +411,10 @@ export default {
       this.$refs.ruleFormRef.validate(async (valid) => {
         if (valid) {
           if (this.mode === 'edit') {
-            await editProduct(this.editForm);
+            await editProduct(this.editAddForm);
             this.$router.push({ name: 'ProductList' });
           } else if (this.mode === 'add') {
-            await addProduct(this.editForm);
+            await addProduct(this.editAddForm);
             this.$router.push({ name: 'ProductList' });
           }
           return true;
@@ -420,9 +432,14 @@ export default {
   margin: 15px auto;
 }
 .form-box {
-  width: 60%;
   min-width: 500px;
-  margin: 0 auto;
+  padding-top: 80px;
+  border: 1px dashed #e9e9e9;
+  background-color: #fafafa;
+  .product-form-box {
+    width: 50%;
+    margin: 0 auto;
+  }
   .input-number-box {
     width: 100%;
   }

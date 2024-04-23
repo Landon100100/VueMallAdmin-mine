@@ -1,12 +1,10 @@
 <template>
   <div class="home">
     <!-- <a-layout id="components-layout-demo-custom-trigger"> -->
-    <!-- <div class="left"> -->
-    <MenuArea class="left"></MenuArea>
-    <!-- </div> -->
-    <!-- <MenuArea></MenuArea> -->
+    <!-- key属性的值使用唯一标识，侦听到$route变化时让MenuArea组件重新渲染。 -->
+    <!-- 给key赋值当前时间戳new Date().getTime(),，近似于唯一标志。 -->
+    <MenuArea class="left" :key="key"></MenuArea>
     <div class="main-app" :class="{ 'menu-unfold': $store.state.menu.collapsed }">
-      <!-- <slot></slot> -->
       <SliderNav></SliderNav>
       <router-view></router-view>
     </div>
@@ -25,7 +23,14 @@ export default {
     SliderNav,
   },
   data() {
-    return {};
+    return {
+      key: new Date().getTime(),
+    };
+  },
+  watch: {
+    $route() {
+      this.key = new Date().getTime();
+    },
   },
   methods: {},
 };

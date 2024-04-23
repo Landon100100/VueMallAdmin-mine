@@ -231,15 +231,16 @@ export default {
       });
     },
     deleteHandle(record) {
-      // 在 $confirm 中，调用 this.方法 或 this.属性 前需要提前用 that 保存
-      const that = this;
+      // 在 $confirm 中，onOK调用不到this。
+      // 方法1： 调用this.方法 或 this.属性 前需要提前用 that 保存
+      // const that = this;
       this.$confirm({
         title: '确认删除',
         content: `确认删除${record.title}？`,
         okText: '确认',
         okType: 'danger',
         cancelText: '取消',
-        onOk() {
+        /* onOk() {
           deleteProduct(record.id).then(() => {
             if (
               that.pagination.total % that.pagination.pageSize === 1
@@ -248,6 +249,18 @@ export default {
               that.pagination.current -= 1;
             }
             that.fetchData(that.pagination.current, that.pagination.pageSize);
+          });
+        }, */
+        // 方法2：onOK改为箭头函数
+        onOk: () => {
+          deleteProduct(record.id).then(() => {
+            if (
+              this.pagination.total % this.pagination.pageSize === 1
+              && this.pagination.total > 1
+            ) {
+              this.pagination.current -= 1;
+            }
+            this.fetchData(this.pagination.current, this.pagination.pageSize);
           });
         },
         onCancel() {
